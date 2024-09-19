@@ -1,7 +1,7 @@
 *.log
 .DS_Store
 node_modules
-dist
+# dist
 .idea
 .cache
 __testClient.d.ts
