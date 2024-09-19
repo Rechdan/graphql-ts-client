@@ -116,7 +116,9 @@ function gqlFieldToTypescript(
 
   return {
     isOptional: isOptional,
-    code: `${field.name}${isOptional ? '?:' : ':'} ${wrappedType}`,
+    code: `${field.name}${isOptional ? '?:' : ':'} ${wrappedType}${
+      wrappedType && wrappedType.includes('Nullable') ? ' | null' : ''
+    }`,
   }
 }
 
@@ -310,7 +312,7 @@ type IClientOptions = {
   skipCache?: boolean
 }
 
-type FetchIntrospectionOptions = Omit< IClientOptions, 'output' | 'introspectionEndpoint'>
+type FetchIntrospectionOptions = Omit<IClientOptions, 'output' | 'introspectionEndpoint'>
 
 function generateClientCode(types: ReadonlyArray<IntrospectionType>, options: Omit<IClientOptions, 'output'>) {
   const typesHash = md5(`${options.endpoint}__${JSON.stringify(types)}`)
@@ -519,7 +521,11 @@ async function fetchIntrospection({ endpoint, headers }: FetchIntrospectionOptio
   return types
 }
 
-export async function generateTypescriptClient({ introspectionEndpoint,output, ...options }: IClientOptions): Promise<{ typings: string; js: string }> {
+export async function generateTypescriptClient({
+  introspectionEndpoint,
+  output,
+  ...options
+}: IClientOptions): Promise<{ typings: string; js: string }> {
   axiosRetry(axios, { retries: 5, retryDelay: retryCount => 1000 * 2 ** retryCount })
 
   const types = await fetchIntrospection({
